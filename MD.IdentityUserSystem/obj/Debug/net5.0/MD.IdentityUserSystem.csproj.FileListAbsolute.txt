@@ -152,3 +152,7 @@ D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\R
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\_ViewImports.cshtml.g.cs
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\Index.cshtml.g.cs
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\Create.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\SignIn.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\GetUserInfo.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\AdminPanel.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\UserPanel.cshtml.g.cs

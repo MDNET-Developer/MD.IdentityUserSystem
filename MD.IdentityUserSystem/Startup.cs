@@ -39,11 +39,21 @@ namespace MD.IdentityUserSystem
                 opt.Password.RequiredLength=3, Buradan sifrenin uzunlugunu mueyyen ede bilerik. Default olaraq 6 gelir. Burada 3 verilib.
                 opt.Password.RequireLowercase=false, Sirede kicik herf mecburiyyetini aradan qaldirir
                 opt.Password.RequireUppercase=false, Sirede boyuk herf mecburiyyetini aradan qaldirir
+                opt.SignIn.RequireConfirmedEmail = true; Mail dogrulamasi default olaraq passive(false) gelir. Bu yolla aktiv(true) ede bilerik
                 */
+                
+
             }).AddEntityFrameworkStores<MDContext>();
             services.AddDbContext<MDContext>(opt =>
             {
                 opt.UseSqlServer(Configuration.GetConnectionString("LocalDb"));
+            });
+
+            services.ConfigureApplicationCookie(opt =>
+            {
+                opt.Cookie.HttpOnly = true; //JS vasitesi ile coockine cekile bilmir
+                opt.Cookie.SameSite=SameSiteMode.Strict // Hemin domende islenecek
+
             });
             services.AddControllersWithViews();
             services.AddMvc();
@@ -63,7 +73,8 @@ namespace MD.IdentityUserSystem
                 FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "node_modules"))
             });
             app.UseRouting();
-
+            app.UseAuthentication();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
