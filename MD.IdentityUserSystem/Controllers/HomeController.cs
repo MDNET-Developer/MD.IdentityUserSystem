@@ -1,8 +1,10 @@
-﻿using MD.IdentityUserSystem.Entities;
+﻿using MD.IdentityUserSystem.Context;
+using MD.IdentityUserSystem.Entities;
 using MD.IdentityUserSystem.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,18 +17,27 @@ namespace MD.IdentityUserSystem.Controllers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly RoleManager<AppRole> _roleManager;
+        private readonly MDContext _context;
 
-        public HomeController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager)
+        public HomeController(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, RoleManager<AppRole> roleManager, MDContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _context = context;
         }
-
         public IActionResult Index()
         {
             return View();
         }
+
+        //İcazəsiz giriş zamanı yönləndirdiyi səhifə
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        //Create new user------------------------
         [HttpGet]
         public IActionResult Create()
         {
@@ -51,6 +62,7 @@ namespace MD.IdentityUserSystem.Controllers
                 
                 if (identityResult.Succeeded)
                 {
+                    //Burda yoxlama edir ki bura member adinda role varmi ? yoxdursa yarat deyir
                     var memberRole = await _roleManager.FindByNameAsync("Member");
                     if (memberRole == null)
                     {
@@ -61,8 +73,9 @@ namespace MD.IdentityUserSystem.Controllers
                         };
                         await _roleManager.CreateAsync(role);
                     }
-                   
+                   //----------------------------------------
 
+                    //Burada yeni yaradilan istifadeciye avtomat member rolu verir
                     await _userManager.AddToRoleAsync(appUser, "Member");
 
                     return RedirectToAction("SignIn");
@@ -85,6 +98,7 @@ namespace MD.IdentityUserSystem.Controllers
 
         }
 
+        //SingIn page --------------------------------
         [HttpGet]
         public IActionResult SignIn()
         {
@@ -94,13 +108,15 @@ namespace MD.IdentityUserSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> SignIn(UserSignInModel userSignIn)
         {
+            
             if (ModelState.IsValid)
             {
                 /*
-                 isPersistent - istifadecini melumatlarini default zaman erzinde coockike de tutur
+                 isPersistent - istifadecini melumatlarini default zaman erzinde coockike de tutur. Burada isPersistent evezine biz modelde elave olaraq bool tipinde property yaradib istifadecinin secimine buraxa bilerik.
                 lockoutOnFailure -  yanlis girisler zamani hemin hesabi kilidleryir
                  */
-              var signInResult =  await _signInManager.PasswordSignInAsync(userSignIn.UserName, userSignIn.PassWord, isPersistent: false, lockoutOnFailure: false);
+                var userName = await _userManager.FindByNameAsync(userSignIn.UserName);
+                var signInResult =  await _signInManager.PasswordSignInAsync(userSignIn.UserName, userSignIn.PassWord, /*isPersistent: false*/ userSignIn.RememberMe, lockoutOnFailure: true);
                 
                 if (signInResult.Succeeded)
                 {
@@ -117,7 +133,7 @@ namespace MD.IdentityUserSystem.Controllers
                     /*
                      O zaman biz userin Role melumatini cekek metod ile. Lakin role melumatini getirmek ucun bizden metodda userin adini isteyir. Evvelce onu cekek sonra role melumatini tapaq.
                      */
-                    var userName = await _userManager.FindByNameAsync(userSignIn.UserName);
+                   
                     var userRole = await _userManager.GetRolesAsync(userName);
                     if (userRole.Contains("Admin"))
                     {
@@ -133,11 +149,28 @@ namespace MD.IdentityUserSystem.Controllers
                 else if (signInResult.IsLockedOut)
                 {
                     //Hesab kilidli
+                    var lockEndTime = await _userManager.GetLockoutEndDateAsync(userName);
+                    DateTime liveTimeUTC = DateTime.UtcNow;
+                  
+                    ModelState.AddModelError("", $"{userName} adlı hesabınız {(lockEndTime.Value.UtcDateTime-DateTime.UtcNow).Minutes} dəqiqə  {(lockEndTime.Value.UtcDateTime - DateTime.UtcNow).Seconds} saniyə  müddəti ərzində bloka düşdü");
                 }
-                else if (signInResult.IsNotAllowed)
+                else
                 {
-                    //mail veya telefon nomresi dogrulanmali
+                  
+                    if (userName!= null)
+                    {
+                        var failedCount = await _userManager.GetAccessFailedCountAsync(userName);
+                        var maxFailedCount = _userManager.Options.Lockout.MaxFailedAccessAttempts;
+
+                        ModelState.AddModelError("", $"{maxFailedCount - failedCount} dəfə  səhv etsəz hesabınız ban olacaq keçici olaraq");
+
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", $"İstifadəçi adın vəya şifrə xətalı");
+                    }
                 }
+                
             }
             return View(userSignIn);
         }
@@ -147,9 +180,20 @@ namespace MD.IdentityUserSystem.Controllers
         {
             var userName = User.Identity.Name;
             var userRole = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role).Value  ;
-            ViewData["UserName"] = $"{userName} / {userRole}";
+            ViewData["UserName"] = $"{userName} \n {userRole}";
             //ViewBag.UserName 
             return View();
+        }
+        public IActionResult GetUserInfoPartial()
+        {
+            var userName = User.Identity.Name;
+            ViewBag.User = userName;
+            ViewBag.Test = "Test";
+
+
+           
+            //ViewBag.UserName 
+            return PartialView();
         }
 
         [Authorize(Roles ="Admin")]
@@ -162,6 +206,14 @@ namespace MD.IdentityUserSystem.Controllers
         public IActionResult UserPanel()
         {
             return View();
+        }
+
+        public async Task<IActionResult> SingOut()
+        {
+            await _signInManager.SignOutAsync();
+            ViewData["Exit"] = "Hesabdan çıxdız";
+            return RedirectToAction("Index");
+
         }
     }
 }

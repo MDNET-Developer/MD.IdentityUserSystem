@@ -156,3 +156,5 @@ D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\R
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\GetUserInfo.cshtml.g.cs
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\AdminPanel.cshtml.g.cs
 D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\UserPanel.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\GetUserInfoPartial.cshtml.g.cs
+D:\MyProjects\NEW\MD.IdentityUserSystem\MD.IdentityUserSystem\obj\Debug\net5.0\Razor\Views\Home\AccessDenied.cshtml.g.cs

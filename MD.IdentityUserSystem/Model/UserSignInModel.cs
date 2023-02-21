@@ -10,5 +10,11 @@ namespace MD.IdentityUserSystem.Model
 
         [Required(ErrorMessage = "Şifrəni daxil et ")]
         public string PassWord { get; set; }
+
+
+        public bool RememberMe { get; set; }
+
+
+
     }
 }
